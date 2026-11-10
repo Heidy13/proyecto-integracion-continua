@@ -1,0 +1,48 @@
+services:
+  app:
+    build: .
+    container_name: contenedor_app
+    ports:
+      - "8080:80"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY}
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: proyecto
+      DB_USERNAME: laravel
+      DB_PASSWORD: secret
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - red_proyecto
+    command: sh -c "until php artisan migrate --force; do echo 'Esperando a MySQL...'; sleep 5; done; apache2-foreground"
+
+  db:
+    image: mysql:8.0
+    container_name: contenedor_db
+    environment:
+      MYSQL_DATABASE: proyecto
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - datos_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -ularavel -psecret --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - red_proyecto
+
+networks:
+  red_proyecto:
+    driver: bridge
+
+volumes:
+  datos_mysql:
