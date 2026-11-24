@@ -21,6 +21,17 @@ services:
       - red_proyecto
     command: sh -c "until php artisan migrate --force; do echo 'Esperando a MySQL...'; sleep 5; done; apache2-foreground"
 
+  jenkins:
+    image: jenkins/jenkins:lts-jdk21
+    container_name: contenedor_jenkins
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - datos_jenkins:/var/jenkins_home
+    networks:
+      - red_proyecto
+
   db:
     image: mysql:8.0
     container_name: contenedor_db
@@ -46,3 +57,4 @@ networks:
 
 volumes:
   datos_mysql:
+  datos_jenkins:
